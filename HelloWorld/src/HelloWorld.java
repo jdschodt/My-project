@@ -17,7 +17,7 @@ public class HelloWorld
         Sound.beepSequenceUp();
         
         g.setFont(Font.getLargeFont());
-        g.drawString("It works!", SW/2, SH/2, GraphicsLCD.BASELINE|GraphicsLCD.HCENTER);
+        g.drawString("HA GAY!", SW/2, SH/2, GraphicsLCD.BASELINE|GraphicsLCD.HCENTER);
         Button.LEDPattern(3);
         Delay.msDelay(4000);
         Button.LEDPattern(5);
