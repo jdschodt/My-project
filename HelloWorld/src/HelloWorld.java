@@ -15,14 +15,20 @@ public class HelloWorld
         final int SH = g.getHeight();
         Button.LEDPattern(4);
         Sound.beepSequenceUp();
-        
-        g.setFont(Font.getLargeFont());
-        g.drawString("HA GAY!", SW/2, SH/2, GraphicsLCD.BASELINE|GraphicsLCD.HCENTER);
+        g.setFont(Font.getDefaultFont());
+        g.drawString("HelloWorld!", SW/2, SH/2, GraphicsLCD.BASELINE|GraphicsLCD.HCENTER);
         Button.LEDPattern(3);
         Delay.msDelay(4000);
-        Button.LEDPattern(5);
         g.clear();
-        g.refresh();
+        String str;
+        for (int i=0;i<=10;i++) {
+        	 Button.LEDPattern(i);
+        	 str=Integer.toString(i);
+             g.drawString(str, SW/2, SH/2, GraphicsLCD.BASELINE|GraphicsLCD.HCENTER);
+             Sound.beepSequenceUp();
+             Delay.msDelay(3000);
+             g.clear();
+        }
         Sound.beepSequence();
         Delay.msDelay(500);
         Button.LEDPattern(0);
