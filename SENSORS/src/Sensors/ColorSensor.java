@@ -5,21 +5,32 @@ import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.robotics.SampleProvider;
 
 public class ColorSensor {
-	EV3ColorSensor colorSensor;
-	SampleProvider colorProvider;
-	float[] colorSample;
+	private static EV3ColorSensor colorSensor;
+	private static SampleProvider colorIDProvider;
+	private static SampleProvider RGBProvider;
+	private static float[] colorIDSample;
+	private static float[] RGBSample;
+	private static int	colorID;
 	
 	public ColorSensor(){
 		Port s3 = LocalEV3.get().getPort("S3");
 		colorSensor = new EV3ColorSensor(s3);
-		colorProvider = colorSensor.getColorIDMode();
-		colorSample = new float [colorProvider.sampleSize()];
+		colorIDProvider = colorSensor.getColorIDMode();
+		RGBProvider=colorSensor.getRGBMode();
+		colorIDSample = new float [colorIDProvider.sampleSize()];
+		RGBSample=new float [RGBProvider.sampleSize()];
+		
 	}
 	
-	public float getColor(){
-			colorProvider.fetchSample(colorSample, 0);
-			return colorSample[0];
+	public int getColorID(){
+		colorIDProvider.fetchSample(colorIDSample, 0);
+		colorID=(int)colorIDSample[0];
+		return colorID;
 		}
+	public float[] getRGB() {
+		RGBProvider.fetchSample(RGBSample, 0);
+		return RGBSample;
+	}
 	
 	public void close() {
 		colorSensor.close();

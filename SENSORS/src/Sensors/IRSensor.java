@@ -11,6 +11,7 @@ public class IRSensor {
 	private static SampleProvider beaconLocator;
 	private static float[] DistanceSample;
 	private static float[] BeaconSample;
+	private static double distance;
 public IRSensor() {
 	Port s2 = LocalEV3.get().getPort("S2");
 	IR = new EV3IRSensor(s2);
@@ -20,10 +21,11 @@ public IRSensor() {
 	BeaconSample= new float[beaconLocator.sampleSize()];
 	System.out.println("IR configured");
     Delay.msDelay(1000);
+    
 }
-public int getDistance() {
+public double getDistance() {
 	distanceProvider.fetchSample(DistanceSample, 0);
-	int distance=(int)DistanceSample[0];
+	distance=(double)DistanceSample[0];
 	return distance;
 }
 public float[] getBeacon() {
