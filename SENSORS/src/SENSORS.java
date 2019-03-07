@@ -18,8 +18,9 @@ public class SENSORS {
 		brick.beep(1, 5);
 		Delay.msDelay(1000);
 		gyro.reset();
-		drive.driveToXY(new Waypoint(10,20,0),gyro);
-		drive.driveToXY(new Waypoint(10,20,50), gyro);
+		drive.reset();
+		drive.driveToXY(new Waypoint(10,20),gyro);
+		drive.driveToXY(new Waypoint(10,20), gyro);
 		System.out.println("Angle:" + gyro.getAngle());
 		Delay.msDelay(20000);
 }
