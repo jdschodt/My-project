@@ -20,8 +20,8 @@ import lejos.utility.Delay;
 
 
 public class Driving {
-	private static MovePilot pilot;
-	private static HeadingCorrectionNavigator navigator;
+	private static CorrectionPilot pilot;
+	private static Navigator navigator;
 	private static CompassPoseProvider provider;
 	public Driving(GyroSensor gyro) {
 		float d=5.62f;//Diameter of the wheels
@@ -30,8 +30,8 @@ public class Driving {
 		Wheel leftWheel=WheeledChassis.modelWheel(Motor.A, d).offset(-y);
 		Wheel rightWheel=WheeledChassis.modelWheel(Motor.B, d).offset(y);
 		Chassis chassis = new WheeledChassis(new Wheel[] {leftWheel,rightWheel}, WheeledChassis.TYPE_DIFFERENTIAL);
-		pilot=new MovePilot(chassis);
-		navigator= new HeadingCorrectionNavigator(pilot,provider);
+		pilot=new CorrectionPilot(chassis,gyro);
+		navigator= new Navigator(pilot);
 		provider=new CompassPoseProvider(navigator.getMoveController(),gyro);
 		chassis.setLinearSpeed(20);
 		chassis.setAngularSpeed(20);
@@ -52,6 +52,7 @@ public class Driving {
 	public void driveTo(int x, int y) {
 		navigator.goTo(x, y);
 		Delay.msDelay(100);
+		System.out.println(provider.getPose());
 
 		while (navigator.isMoving()) {
 			Delay.msDelay(100);
@@ -61,10 +62,9 @@ public class Driving {
 	}
 	public void driveTo(Waypoint waypoint) {
 		navigator.goTo(waypoint);
-
+		System.out.println(provider.getPose());
 		while (navigator.isMoving()) {
 			Delay.msDelay(100);
-			System.out.println(provider.getPose());
 		}
 		
 	}
@@ -99,6 +99,9 @@ public class Driving {
 				
 	public void setHeading(GyroSensor gyro) {
 		provider.getPose().setHeading((float)gyro.getAngle());
+		
+	}
+	public void addWaypoint(Waypoint awaypoint) {
 		
 	}
 	

@@ -14,7 +14,7 @@ import lejos.robotics.navigation.Pose;
  */
 public class CompassPoseProvider extends OdometryPoseProvider {
 
-	private static GyroSensor gyro;
+	private GyroSensor gyro;
 	
 	public CompassPoseProvider(MoveProvider mp, GyroSensor agyro) {
 		super(mp);

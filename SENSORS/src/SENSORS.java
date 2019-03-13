@@ -26,7 +26,7 @@ public class SENSORS {
 		}
 		public void run() {
 			while (true) {
-				Delay.msDelay(1000);
+				Delay.msDelay(250);
 				drive.setHeading(gyro);
 
 			}

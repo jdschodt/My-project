@@ -9,13 +9,16 @@ import lejos.robotics.navigation.Waypoint;
 import lejos.utility.Delay;
 
 public class HeadingCorrectionNavigator extends Navigator{
-	MovePilot pilot;
+	CorrectionPilot pilot;
 	static float error;
+	private static CompassPoseProvider provider;
 	
-	public HeadingCorrectionNavigator(MovePilot pilot, PoseProvider poseProvider) {
-		super(pilot,poseProvider);
+	public HeadingCorrectionNavigator(CorrectionPilot pilot, CompassPoseProvider aposeProvider) {
+		super(pilot);
+		provider=aposeProvider;
 		this.pilot=pilot;
 		System.out.println("HeadingCorrectionNavigator");
+		Delay.msDelay(1000);
 		
 	}
 	public float normalize(float angle) {
@@ -28,12 +31,12 @@ public class HeadingCorrectionNavigator extends Navigator{
 		return angle;
 	}
 	public void rotate(float angle) {
-		error=super.getPoseProvider().getPose().getHeading();
+		error=provider.getPose().getHeading();
 		Delay.msDelay(50);
 		pilot.rotate(angle, false);
 		System.out.println("Draaihoek: "+angle);
 		Delay.msDelay(50);
-		error=normalize(angle)-super.getPoseProvider().getPose().getHeading()+error;
+		error=normalize(angle)-provider.getPose().getHeading()+error;
 		System.out.println("Nieuwe_err: " + error);
 		Delay.msDelay(50);		
 		System.out.println("error:"+error);
@@ -42,11 +45,12 @@ public class HeadingCorrectionNavigator extends Navigator{
 		}
 	}
 	public void travel(float distance) {
-		float targetAngle=super.getPoseProvider().getPose().getHeading();
+		float targetAngle=provider.getPose().getHeading();
 		pilot.travel(distance, true);
+		System.out.println("Distancetraveled");
 		while (pilot.isMoving()){
 			Delay.msDelay(50);
-			error=targetAngle-super.getPoseProvider().getPose().getHeading();
+			error=targetAngle-provider.getPose().getHeading();
 			if (Math.abs(error)>3) {
 				float traveledDistance=pilot.getMovement().getDistanceTraveled();
 				pilot.stop();
@@ -59,9 +63,10 @@ public class HeadingCorrectionNavigator extends Navigator{
 	}
 	@Override
 	public void goTo (Waypoint destination) {
-		float destinationRelativeBearing=normalize(super.getPoseProvider().getPose().angleTo(destination));
-		float distance = super.getPoseProvider().getPose().distanceTo(destination);
+		float destinationRelativeBearing=normalize(provider.getPose().angleTo(destination));
+		float distance = provider.getPose().distanceTo(destination);
 		rotate(destinationRelativeBearing);
 		travel(distance);
+		System.out.println("Go to");
 	}
 }
