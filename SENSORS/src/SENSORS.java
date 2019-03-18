@@ -17,10 +17,10 @@ public class SENSORS {
 	public Driving drive=new Driving(gyro);
 	
 	public  SENSORS() {
-		new Regulator().start();
+		//new Regulator().start();
 	}
 
-	private class Regulator extends Thread {
+	/*private class Regulator extends Thread {
 		public Regulator() {
 			setDaemon(true);
 		}
@@ -32,6 +32,8 @@ public class SENSORS {
 			}
 		}
 	}
+	*/
+	
 	public static void main(String[] args) {
 		SENSORS rob=new SENSORS();
 		rob.brick.beep(1, 5);
@@ -43,16 +45,49 @@ public class SENSORS {
 			Delay.msDelay(1000);
 		}
 		System.out.println("start1");
-			rob.drive.driveTo(new Waypoint(30,0));
-			Delay.msDelay(2000);
+			//rob.drive.goToTravel(400);
+			//rob.drive.getPose();
+			//Delay.msDelay(5000);
+			rob.drive.driveTo(new Waypoint(40,0));
 			System.out.println("start2");
-			rob.drive.driveTo(new Waypoint(30,30));
-			Delay.msDelay(2000);
+			Delay.msDelay(500);
+			rob.drive.getPose();
+			Delay.msDelay(500);			
+			rob.drive.driveTo(new Waypoint(40,40));
 			System.out.println("start3");
-			rob.drive.driveTo(new Waypoint(0, 30));
-			Delay.msDelay(2000);
+			Delay.msDelay(500);
+			rob.drive.getPose();
+			Delay.msDelay(500);
+			rob.drive.driveTo(new Waypoint(0, 40));
 			System.out.println("start4");
+			Delay.msDelay(500);
+			rob.drive.getPose();
+			Delay.msDelay(500);
 			rob.drive.driveTo(new Waypoint(0, 0));
+			System.out.println("start5");
+			Delay.msDelay(500);
+			rob.drive.getPose();
+			Delay.msDelay(500);
+			rob.drive.driveTo(new Waypoint(40,40));
+			System.out.println("start6");
+			Delay.msDelay(500);
+			rob.drive.getPose();
+			Delay.msDelay(500);
+			rob.drive.driveTo(new Waypoint(40,0));
+			System.out.println("start7");
+			Delay.msDelay(500);
+			rob.drive.getPose();
+			Delay.msDelay(500);
+			rob.drive.driveTo(new Waypoint(0, 40));
+			System.out.println("start8");
+			Delay.msDelay(500);
+			rob.drive.getPose();
+			Delay.msDelay(500);
+			rob.drive.driveTo(new Waypoint(0, 0));
+			Delay.msDelay(500);
+			rob.drive.getPose();
+			Delay.msDelay(500);
+			Delay.msDelay(100000);
 		
 		
 }
