@@ -24,6 +24,7 @@ public class CompassPoseProvider extends OdometryPoseProvider {
 	public Pose getPose() {
 		Pose temp = super.getPose();
 		temp.setHeading((float)gyro.getAngle());
+		System.out.println("getPose" + temp);
 		return temp;
 	}
 }

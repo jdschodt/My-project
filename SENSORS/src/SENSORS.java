@@ -33,6 +33,7 @@ public class SENSORS {
 		}
 	}
 	public static void main(String[] args) {
+		
 		SENSORS rob=new SENSORS();
 		rob.brick.beep(1, 5);
 		rob.gyro.reset();

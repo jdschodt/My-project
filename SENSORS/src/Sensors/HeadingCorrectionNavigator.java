@@ -10,6 +10,7 @@ import lejos.utility.Delay;
 
 public class HeadingCorrectionNavigator extends Navigator{
 	MovePilot pilot;
+	GyroSensor gyro;
 	static float error;
 	
 	public HeadingCorrectionNavigator(MovePilot pilot, PoseProvider poseProvider) {
@@ -29,6 +30,7 @@ public class HeadingCorrectionNavigator extends Navigator{
 	}
 	public void rotate(float angle) {
 		error=super.getPoseProvider().getPose().getHeading();
+		System.out.println("error"+ error);
 		Delay.msDelay(50);
 		pilot.rotate(angle, false);
 		System.out.println("Draaihoek: "+angle);
@@ -37,6 +39,11 @@ public class HeadingCorrectionNavigator extends Navigator{
 		System.out.println("Nieuwe_err: " + error);
 		Delay.msDelay(50);		
 		System.out.println("error:"+error);
+		//while (super.getPoseProvider().getPose().getHeading()-gyro.getAngle()>2) {
+			//System.out.println("Corrigeren...");
+			//pilot.rotate(super.getPoseProvider().getPose().getHeading()-gyro.getAngle());
+			//}
+		
 		if(Math.abs(error)>1) {
 			rotate(normalize(error));
 		}
