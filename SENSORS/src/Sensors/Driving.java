@@ -6,6 +6,7 @@ import lejos.hardware.motor.Motor;
 import lejos.robotics.chassis.Chassis;
 import lejos.robotics.chassis.Wheel;
 import lejos.robotics.chassis.WheeledChassis;
+import lejos.robotics.localization.PoseProvider;
 import Sensors.CompassPoseProvider;
 import lejos.robotics.navigation.Move;
 import lejos.robotics.navigation.MoveListener;
@@ -21,18 +22,17 @@ import lejos.utility.Delay;
 
 public class Driving {
 	private static MovePilot pilot;
-	private static HeadingCorrectionNavigator navigator;
-	private static CompassPoseProvider provider;
+	private static Navigator navigator;
+	private static PoseProvider provider;
 	public Driving(GyroSensor gyro) {
-		float d=5.62f;//Diameter of the wheels
-		float s=30f;
-		float y=9.8f;
+		float d=5.771501925545571245186136071887f;//Diameter of the wheels
+		float y=9.3f;
 		Wheel leftWheel=WheeledChassis.modelWheel(Motor.A, d).offset(-y);
 		Wheel rightWheel=WheeledChassis.modelWheel(Motor.B, d).offset(y);
 		Chassis chassis = new WheeledChassis(new Wheel[] {leftWheel,rightWheel}, WheeledChassis.TYPE_DIFFERENTIAL);
 		pilot=new MovePilot(chassis);
-		navigator= new HeadingCorrectionNavigator(pilot,provider);
-		provider=new CompassPoseProvider(navigator.getMoveController(),gyro);
+		navigator= new Navigator(pilot);
+		provider=navigator.getPoseProvider();
 		chassis.setLinearSpeed(20);
 		chassis.setAngularSpeed(20);
 		chassis.setLinearAcceleration(5);
@@ -51,20 +51,16 @@ public class Driving {
 	}
 	public void driveTo(int x, int y) {
 		navigator.goTo(x, y);
-		Delay.msDelay(100);
 
 		while (navigator.isMoving()) {
 			Delay.msDelay(100);
-			System.out.println(provider.getPose());
 		}
 
 	}
 	public void driveTo(Waypoint waypoint) {
 		navigator.goTo(waypoint);
-
 		while (navigator.isMoving()) {
 			Delay.msDelay(100);
-			System.out.println(provider.getPose());
 		}
 		
 	}
@@ -100,6 +96,14 @@ public class Driving {
 	public void setHeading(GyroSensor gyro) {
 		provider.getPose().setHeading((float)gyro.getAngle());
 		
+	}
+	public void addWaypoint(Waypoint awaypoint) {
+		
+	}
+	public void rotate(double angle) {
+		this.rotate(angle);
+		double h= provider.getPose().getHeading()+angle;
+		provider.getPose().setHeading((float)h);
 	}
 	
 }
