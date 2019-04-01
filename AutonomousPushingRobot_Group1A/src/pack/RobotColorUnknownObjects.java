@@ -25,7 +25,7 @@ public class RobotColorUnknownObjects extends Thread{
 	static EV3LargeRegulatedMotor leftMotor= new EV3LargeRegulatedMotor(MotorPort.A);
 	static EV3LargeRegulatedMotor rightMotor= new EV3LargeRegulatedMotor(MotorPort.B);
 	static GyroSensor gyroSensor=new GyroSensor();
-	static CorrectionPilot pilot=new CorrectionPilot(55, 104, leftMotor, rightMotor,gyroSensor);
+	static CorrectionPilot pilot=new CorrectionPilot(57.72, 186, leftMotor, rightMotor,gyroSensor);
 	static Pose pose = new Pose();
 
 	static Navigator nav=new Navigator(pilot);
@@ -77,20 +77,20 @@ public class RobotColorUnknownObjects extends Thread{
 			pilot.setAngularAcceleration(200);
 			pilot.setLinearAcceleration(100);	
 
-
-
 			System.out.println("Start of Detection loop");		
 
-			float colorsamp = 0;
-
+			int colorsamp = 0;
+			float objX = 0;
+			float objY = 0;
 			if (gotObject==false){
 				if (firstCheckPoint){
 					driveto(new Waypoint(500,500)); //checkpoint 1 to scan
 					checkPoint=1;
 					System.out.println("Checkpoint 1 reached");
+					Delay.msDelay(1000); // may be deleted
 				}
 				else if(secondCheckPoint){
-					driveto(new Waypoint(1500,500));
+					driveto(new Waypoint(1000,1000));
 					System.out.println("Checkpoint 2 reached");
 					checkPoint=2;
 				}
@@ -102,9 +102,9 @@ public class RobotColorUnknownObjects extends Thread{
 				float distance = 0;
 
 				while (!gripper.Object()){
+					
 					System.out.println("detecting....");
 					distance=objectFinder.findObject(ir,pilot,ultrasonicsensor,nav,gyroSensor,angleToRotate);
-					System.out.println("Dinstance: "+ distance);
 					pilot.setAngularSpeed(50);
 //					NotFirstPriority=false;
 //					objectAlreadyDetected = false;
@@ -113,39 +113,21 @@ public class RobotColorUnknownObjects extends Thread{
 					float Y = nav.getPoseProvider().getPose().getY();
 					double Angle = gyroSensor.getHeadingAngle();
 
-
+					objX = nav.getPoseProvider().getPose().getX();
+					objY = nav.getPoseProvider().getPose().getY();
+					double objA = gyroSensor.getHeadingAngle();
+					
+				
+					
 					if(!(distance==0)){
-						distance=(distance)*1000-10;
-						System.out.println("Distance!=0");
 
 						Point NewObject = nav.getPoseProvider().getPose().pointAt(distance, gyroSensor.getHeadingAngle());
-//
-//						for (int i=0; i < bricklist.size(); i++){
-//
-//							pose.setLocation(bricklist.get(i).waypoint.x, bricklist.get(i).waypoint.y);
-//
-//							if ((pose.distanceTo(NewObject))<250) {
-//								objectAlreadyDetected = true;
-//								pilot.rotate(objectFinder.angleAfterUltrasoon-(int) gyroSensor.getAngle());
-//								goToTravel((int) (-objectFinder.distanceTravelled));
-//								pilot.rotate(60);
-//								nav.getPoseProvider().setPose(new Pose(nav.getPoseProvider().getPose().getX(),nav.getPoseProvider().getPose().getY(),gyroSensor.getAngle()));
-//
-//								angleToRotate = angleToRotate - ((int) gyroSensor.getAngle()-objectFinder.StartAngle);
-//
-//							}
-//
-//						}
 
-
-//						if (!objectAlreadyDetected){
-//						goToTravel(distance);
 						System.out.println("Distance travelled, Object Reached");
 						gripper.grip();
-						colorsamp = colorSensor.getColor();
+						colorsamp = (int) colorSensor.getColor();
 						
 						System.out.println("Color: "+colorsamp);
-
 
 						X = nav.getPoseProvider().getPose().getX();
 						Y = nav.getPoseProvider().getPose().getY();
@@ -155,25 +137,6 @@ public class RobotColorUnknownObjects extends Thread{
 						double y = Y+ 75*Math.sin(Angle*Math.PI/180);
 
 						Waypoint waypoint = new Waypoint(nav.getPoseProvider().getPose().pointAt((float) 85, (float) gyroSensor.getHeadingAngle()));
-
-//						bricklist.get(0).changeWaypoint(waypoint);
-
-//						gripper.grip();
-//						Delay.msDelay(500);
-//						gripper.release();
-//						Delay.msDelay(500);
-//						goToTravel(-10);
-//
-//						SortListOfBricks(firstColor,secondColor,thirdColor);
-
-
-//								NotFirstPriority = true;
-//						goToTravel(-distance);
-//						pilot.rotate(objectFinder.angleAfterUltrasoon-(int) gyroSensor.getAngle());
-////						goToTravel((int) (-objectFinder.distanceTravelled));
-////						pilot.rotate(60);
-//						nav.getPoseProvider().setPose(new Pose(nav.getPoseProvider().getPose().getX(),nav.getPoseProvider().getPose().getY(),gyroSensor.getAngle()));
-//						angleToRotate = angleToRotate - ((int) gyroSensor.getAngle()-objectFinder.StartAngle);
 
 						}
 
@@ -206,6 +169,7 @@ public class RobotColorUnknownObjects extends Thread{
 
 			/* if the gripper holds an object it is brought to the collector point where it is released.*/
 			if (gripper.Object()){
+				reposition(objX, objY, colorsamp);
 				System.out.println("om te grippen, grip");
 				pilot.setLinearSpeed(200);
 				pilot.setAngularSpeed(50);
@@ -242,12 +206,34 @@ public class RobotColorUnknownObjects extends Thread{
 
 			}
 
-
-
 		}
 	}
 
+	public static void reposition(float objX, float objY, int colorsamp) {
+		float[] repos = {0,0};
+		int[] parking = {0,0};
+		if (colorsamp==2) {
+			parking[0] = 500;
+			parking[1] = 0;
+		}
+		else if (colorsamp==0) {
+			parking[0] = 700;
+			parking[1] = 0;
+		}
+		else {
+			parking[0] = 900;
+			parking[1] = 0;
+		}
 
+		float a = (objY - parking[1])/(objX - parking[0]);
+		float b = objY -a*objX;
+		
+		repos[1] =(float) (objY+200*Math.sin(Math.atan(Math.abs(a))));
+		repos[0] = (repos[1]-b)/a;
+		
+		
+		
+	}
 
 
 	public static void driveto(Waypoint waypoint){

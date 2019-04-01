@@ -347,18 +347,18 @@ public class CorrectionPilot implements ArcRotateMoveController {
 		arc(0,angle, false);
 		
 	    double gyroAngle = gyroSensor.getAngle()-starGyroAngle;
-		Delay.msDelay(500);
+		Delay.msDelay(100); //these were set at 500 ms
 		
 
 		setAngularAcceleration(200);
 		setAngularSpeed(50);
 		
 	    while ((int)(angle-gyroAngle) <0 | (int)(angle-gyroAngle)>0){
-	    	Delay.msDelay(500);
+	    	Delay.msDelay(100);//these were set at 500 ms
 
 
 	    	arc(0,angle-gyroAngle, false);
-	    	Delay.msDelay(500);
+	    	Delay.msDelay(100);//these were set at 500 ms
 	    	gyroAngle = gyroSensor.getAngle()-starGyroAngle;
 
 
