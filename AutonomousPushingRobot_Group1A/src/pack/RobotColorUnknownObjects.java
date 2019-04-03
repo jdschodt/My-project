@@ -209,7 +209,7 @@ public class RobotColorUnknownObjects extends Thread{
 		}
 	}
 
-	public static void reposition(float objX, float objY, int colorsamp) {
+	public static void reposition(float objX, float objY, float RobH, int colorsamp) {
 		float[] repos = {0,0};
 		int[] parking = {0,0};
 		if (colorsamp==2) {
@@ -224,12 +224,41 @@ public class RobotColorUnknownObjects extends Thread{
 			parking[0] = 900;
 			parking[1] = 0;
 		}
-
-		float a = (objY - parking[1])/(objX - parking[0]);
-		float b = objY -a*objX;
-		
+		float a=(objX - parking[0])/(objY - parking[1]);
+		float b= objY -a*objX;
+		float DestH=(float) Math.atan(a)-90;
+		if(DestH>-90) {
+			if((180>=RobH)&(RobH>=DestH+180)|(DestH-90>RobH)&(RobH>=-180)) {
+				System.out.println("1th quadrant");
+			}
+			if((DestH>RobH)&(RobH>=DestH-90)) {
+				System.out.println("2th quadrant");
+			}
+			if((DestH+90>RobH)&(RobH>=DestH)){
+				System.out.println("3th quadrant");				
+			}
+			if((DestH+180>RobH)&(RobH>=DestH+90)) {
+				System.out.println("4th quadrant");
+			}
+		}
+		if(-90>DestH) {
+			if((DestH+270>RobH)&(RobH>=DestH+180)) {
+				System.out.println("1th quadrant");
+			}
+			if((180>=RobH)&(RobH>=DestH+270)|(DestH>RobH)&(RobH>=-90)) {
+				System.out.println("2th quadrant");
+			}
+			if((DestH+90>RobH)&(RobH>=DestH)){
+				System.out.println("3th quadrant");				
+			}
+			if((DestH+180>RobH)&(RobH>=DestH+90)) {
+				System.out.println("4th quadrant");
+			}	
 		repos[1] =(float) (objY+200*Math.sin(Math.atan(Math.abs(a))));
 		repos[0] = (repos[1]-b)/a;
+		
+		}
+		
 		
 		
 		

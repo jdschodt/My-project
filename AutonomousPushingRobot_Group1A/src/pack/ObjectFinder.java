@@ -56,7 +56,7 @@ public class ObjectFinder {
 			
 			if (dist>distance & !(dist==0) & distance<0.5 & i==1){
 				System.out.println("object at first sight");
-				pilot.rotateImmediateReturn(140, true);
+				pilot.rotateImmediateReturn(360, true);
 				System.out.println("goingLeft...");
 				while(pilot.isMoving()&&Button.ESCAPE.isUp()){
 					dist = distance;
@@ -90,7 +90,7 @@ public class ObjectFinder {
 					float Y = nav.getPoseProvider().getPose().getY();
 					double Angle = gyroSensor.getHeadingAngle();
 					distance=usensor.getDistance();
-					distance = distance * 500;
+					distance = distance * 500; //usensor is in meters, while naviation in milimeters
 					pilot.travel((int) (distance),false);
 					
 					X = X+(float) (distance)*(float) Math.cos(Angle*Math.PI/180);
