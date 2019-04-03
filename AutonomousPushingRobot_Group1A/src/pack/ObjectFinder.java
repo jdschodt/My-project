@@ -54,6 +54,7 @@ public class ObjectFinder {
 			dist = distance; //=3
 			distance=usensor.getDistance(); //new: .22
 			
+//			If the robot detects an object at first measurement, the robot turns to the left until the object is not detected anymore.
 			if (dist>distance & !(dist==0) & distance<0.5 & i==1){
 				System.out.println("object at first sight");
 				pilot.rotateImmediateReturn(140, true);
@@ -64,14 +65,14 @@ public class ObjectFinder {
 					if(distance>2*dist) {
 						pilot.stop();
 						startAngle = gyroSensor.getAngle();
-						startAngle2 = (int) gyroSensor.getAngle();
 						System.out.println("StartAngle: " +startAngle);
-						System.out.println("StartAngle2: "+startAngle2);
 						
 						Delay.msDelay(2000);
 					}
 				}
 			distance = 3;
+//			and after that the robot turns to the right until the object is not detected anymore.
+//			The robot has then the 2 'boundary angles' and can take the mean of both to travel towards it
 			pilot.rotateImmediateReturn(-360, true);
 			System.out.println("GoingRight...");
 			Delay.msDelay(2000);
@@ -90,6 +91,8 @@ public class ObjectFinder {
 					float Y = nav.getPoseProvider().getPose().getY();
 					double Angle = gyroSensor.getHeadingAngle();
 					distance=usensor.getDistance();
+					
+//					Travel half the distance that is measured, to execute the same code to find the object again.
 					distance = distance * 500;
 					pilot.travel((int) (distance),false);
 					
@@ -98,15 +101,16 @@ public class ObjectFinder {
 	
 					nav.getPoseProvider().setPose(new Pose(X,Y,gyroSensor.getAngle()));
 					Delay.msDelay(500);
-//					
-//					distance = preciseDetection(ir, pilot, usensor, nav, gyroSensor);
-//					distance = distance * 1000-200;
-//					pilot.travel((int) (distance),false);
-//					
-//					X = X+(float) (distance)*(float) Math.cos(Angle*Math.PI/180);
-//					Y = Y+(float) (distance)*(float) Math.sin(Angle*Math.PI/180);
-//	
-//					nav.getPoseProvider().setPose(new Pose(X,Y,gyroSensor.getAngle()));
+					
+//					preciseDetection is exactly the same code
+					distance = preciseDetection(ir, pilot, usensor, nav, gyroSensor);
+					distance = distance * 1000;
+					pilot.travel((int) (distance),false);
+					
+					X = X+(float) (distance)*(float) Math.cos(Angle*Math.PI/180);
+					Y = Y+(float) (distance)*(float) Math.sin(Angle*Math.PI/180);
+	
+					nav.getPoseProvider().setPose(new Pose(X,Y,gyroSensor.getAngle()));
 					
 					NoDetection = false;
 					distanceTravelled= distance;
@@ -114,7 +118,8 @@ public class ObjectFinder {
 				}
 			}
 			}
-			System.out.println("Distance: " + distance);
+			
+			//If robot does not detect object at first sight.
 			if(dist>distance & !(dist==0) & distance<.5 & i !=1){
 				System.out.println("Option 2 ");
 				Delay.msDelay(2000);
@@ -147,6 +152,8 @@ public class ObjectFinder {
 		
 						nav.getPoseProvider().setPose(new Pose(X,Y,gyroSensor.getAngle()));
 						Delay.msDelay(500);
+						
+//						again execute the same code again to more precisely detect the object.
 						distance = preciseDetection(ir, pilot, usensor, nav, gyroSensor);
 //						
 //						distance = distance * 1000-200;
@@ -166,10 +173,8 @@ public class ObjectFinder {
 			}
 
 		}
-		if (NoDetection){
-			return 0;
-		}
-		return (float) distance;
+		return 0;
+		
 		}
 	float preciseDetection(IRSensor ir, CorrectionPilot pilot, UltrasonicSensor usensor, Navigator nav, GyroSensor gyroSensor) {
 		pilot.setLinearSpeed(50);
