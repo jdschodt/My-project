@@ -50,6 +50,7 @@ public class RobotColorUnknownObjects extends Thread{
 		pilot.setAngularAcceleration(200);
 		pilot.setLinearAcceleration(100);	
 
+		//these 2 programs are multithreaded
 		new Exit().start();
 		new RobotColorUnknownObjects().start();
 	}
@@ -59,17 +60,13 @@ public class RobotColorUnknownObjects extends Thread{
 		boolean firstCheckPoint = true;
 		boolean secondCheckPoint = false;
 		boolean gotObject = false;
-		boolean NoObjectDetected = false;
+		boolean NoObjectDetected = true;
 //		boolean objectAlreadyDetected = false;
 //		boolean NotFirstPriority=false;
 
 		int checkPoint = 0;
 		int angleToRotate = 360;
-
-		int firstColor = Color.RED;
-		int secondColor = Color.BLUE;
-		int thirdColor = Color.GREEN;
-
+		
 		while (Button.ESCAPE.isUp()){
 
 			pilot.setLinearSpeed(200);
@@ -82,6 +79,9 @@ public class RobotColorUnknownObjects extends Thread{
 			int colorsamp = 0;
 			float objX = 0;
 			float objY = 0;
+			float objA = 0;
+			
+			//If no object is found at a checkpoint, go to another checkpoint
 			if (gotObject==false){
 				if (firstCheckPoint){
 					driveto(new Waypoint(500,500)); //checkpoint 1 to scan
@@ -90,7 +90,7 @@ public class RobotColorUnknownObjects extends Thread{
 					Delay.msDelay(1000); // may be deleted
 				}
 				else if(secondCheckPoint){
-					driveto(new Waypoint(1000,1000));
+					driveto(new Waypoint(1500,500));
 					System.out.println("Checkpoint 2 reached");
 					checkPoint=2;
 				}
@@ -98,32 +98,36 @@ public class RobotColorUnknownObjects extends Thread{
 				firstCheckPoint=false;
 				secondCheckPoint=false;
 
-				angleToRotate = 360;
+				angleToRotate = 360; // angle to make complete turn
 				float distance = 0;
 
-				while (!gripper.Object()){
+				while (!gripper.Object() && angleToRotate>0){ //( !gripper.Object can be probably changed to !gotObject (so that we get rid of the gripper program).
 					
 					System.out.println("detecting....");
+					
+//					objectFinder.findObject lets the robot turn and scan with ultrasonic sensor until object is found
 					distance=objectFinder.findObject(ir,pilot,ultrasonicsensor,nav,gyroSensor,angleToRotate);
 					pilot.setAngularSpeed(50);
-//					NotFirstPriority=false;
-//					objectAlreadyDetected = false;
 
 					float X = nav.getPoseProvider().getPose().getX();
 					float Y = nav.getPoseProvider().getPose().getY();
 					double Angle = gyroSensor.getHeadingAngle();
 
+//					save the coordinates of the object (needs to be adjusted for the size of the object)
 					objX = nav.getPoseProvider().getPose().getX();
 					objY = nav.getPoseProvider().getPose().getY();
-					double objA = gyroSensor.getHeadingAngle();
+					objA = gyroSensor.getHeadingAngle();
 					
-				
+					System.out.println("distance: "+ distance);
+					Delay.msDelay(2000);
 					
+//					objectFinder.findObject returns the value of the distance if a object is found, or if no object is found, a zero is returned
+//					This if statement takes care of when an object is found
 					if(!(distance==0)){
 
-						Point NewObject = nav.getPoseProvider().getPose().pointAt(distance, gyroSensor.getHeadingAngle());
+						Point NewObject = nav.getPoseProvider().getPose().pointAt(distance, gyroSensor.getHeadingAngle()); //not important?
 
-						System.out.println("Distance travelled, Object Reached");
+						System.out.println("Object Reached");
 						gripper.grip();
 						colorsamp = (int) colorSensor.getColor();
 						
@@ -133,70 +137,83 @@ public class RobotColorUnknownObjects extends Thread{
 						Y = nav.getPoseProvider().getPose().getY();
 						Angle = gyroSensor.getHeadingAngle();
 
-						double x = X+ 75*Math.cos(Angle*Math.PI/180);
-						double y = Y+ 75*Math.sin(Angle*Math.PI/180);
+						double x = X+ 75*Math.cos(Angle*Math.PI/180); //not important?
+						double y = Y+ 75*Math.sin(Angle*Math.PI/180); //not important?
 
-						Waypoint waypoint = new Waypoint(nav.getPoseProvider().getPose().pointAt((float) 85, (float) gyroSensor.getHeadingAngle()));
-
-						}
-
+						Waypoint waypoint = new Waypoint(nav.getPoseProvider().getPose().pointAt((float) 85, (float) gyroSensor.getHeadingAngle())); //not important?
+						
+//						Set the booleans to go to other checkpoint after parking the object
 						if (checkPoint==1){
+							
 							firstCheckPoint=false;
+							secondCheckPoint=true;
 							System.out.println("boolean set");
-						}
-						else if(checkPoint==2){
-							secondCheckPoint=true;
-						}
-//						if ((priority==1)){
-//							break;
-//						}
-						
-						
-					else if ((distance==0) | (angleToRotate<0)){
-						NoObjectDetected = true;
+							}
+						else {
+							if(checkPoint==2){
+							secondCheckPoint=false;
+							firstCheckPoint=true;
 
-						if (checkPoint==1){
-							secondCheckPoint=true;
-							firstCheckPoint=false;
+							}
 						}
-						break;
-
 					}
 
-				}
+//					Or if a zero is returned by objectFinder.findObject:
+//					then just set the booleans to go the to other checkpoint
+					else{
+						if (checkPoint==1){
+					
+							firstCheckPoint=false;
+							secondCheckPoint=true;
+							}
+						else {
+							if(checkPoint==2){
+							secondCheckPoint=false;
+							firstCheckPoint=true;
 
+							}
+						}
+						break;
+					}
+				}
 			}
 
-			/* if the gripper holds an object it is brought to the collector point where it is released.*/
+//			If an object is found, the robot needs to reposition itself behind the object after which it drives to the right parkingspot.
 			if (gripper.Object()){
-				reposition(objX, objY, colorsamp);
+				// reposition the robot.
+				reposition(objX, objY, objA, colorsamp);
 				System.out.println("om te grippen, grip");
 				pilot.setLinearSpeed(200);
 				pilot.setAngularSpeed(50);
 				pilot.setAngularAcceleration(200);
 				pilot.setLinearAcceleration(100);
 				
+				// in function of the color, drive to the right parking spot.
+				// Here we can implement that the robot drives to 20 in front of the parking spot and then straight into it.
 				if (colorsamp==2) {
 					System.out.println("blauw");
 					drivetoObject(new Waypoint(500,0));
+//					drivetoObject(new Waypoint(500,-30));
 				}
 				else if (colorsamp==0) {
 					System.out.println("rood");
 					drivetoObject(new Waypoint(700,0));
+//					drivetoObject(new Waypoint(700,-30));
 				}
 				else {
 					System.out.println("rest");
 					drivetoObject(new Waypoint(900,0));
+//					drivetoObject(new Waypoint(900,-30));
 				}
 
 				Delay.msDelay(500);
 				
 
-				gripper.release();
+				gripper.release(); // can be changed to gotObject= false (to get rid of gripper program)
 				Delay.msDelay(500);
 				System.out.println("Afheleverd");
 
-				goToTravel(-170);
+				goToTravel(-300); // drive backwards out of the parking
 				secondCheckPoint = true;
 
 
@@ -209,9 +226,17 @@ public class RobotColorUnknownObjects extends Thread{
 		}
 	}
 
+
+	
+	
+//	We need to check this function for errors, I uploaded a separate java file to test this code.
 	public static void reposition(float objX, float objY, float RobH, int colorsamp) {
+		pilot.travel(-200);
+//		nav.getPoseProvider().setPose(new Pose(waypoint.x,waypoint.y,gyroSensor.getHeadingAngle()));
 		float[] repos = {0,0};
 		int[] parking = {0,0};
+		float[] chp1 = {0,0};
+		float[] chp2 = {0,0};
 		if (colorsamp==2) {
 			parking[0] = 500;
 			parking[1] = 0;
@@ -226,45 +251,70 @@ public class RobotColorUnknownObjects extends Thread{
 		}
 		float a=(objX - parking[0])/(objY - parking[1]);
 		float b= objY -a*objX;
-		float DestH=(float) Math.atan(a)-90;
+		repos[1] =(float) (objY+200*Math.sin(Math.atan(Math.abs(a))));
+		repos[0] = (repos[1]-b)/a;
+		
+		if (a<0) {
+			chp1[1] = (float) (objY+200*Math.cos(Math.atan(a)));
+			chp1[0] = (float) (objX-200*Math.sin(Math.atan(a)));
+			
+			chp2[1] = (float) (objY-200*Math.cos(Math.atan(a)));
+			chp2[0] = (float) (objX+200*Math.sin(Math.atan(a)));
+		}
+		else {
+			chp1[1] = (float) (objY-200*Math.cos(Math.atan(a)));
+			chp1[0] = (float) (objX+200*Math.sin(Math.atan(a)));
+			
+			chp2[1] = (float) (objY+200*Math.cos(Math.atan(a)));
+			chp2[0] = (float) (objX-200*Math.sin(Math.atan(a)));
+		}
+		float DestH=(float) Math.atan(1/a)-90;
 		if(DestH>-90) {
 			if((180>=RobH)&(RobH>=DestH+180)|(DestH-90>RobH)&(RobH>=-180)) {
 				System.out.println("1th quadrant");
+				driveto(new Waypoint(chp1[0], chp1[1]));
+				driveto(new Waypoint(repos[0], repos[1]));
 			}
 			if((DestH>RobH)&(RobH>=DestH-90)) {
 				System.out.println("2th quadrant");
+				driveto(new Waypoint(repos[0], repos[1]));
 			}
 			if((DestH+90>RobH)&(RobH>=DestH)){
-				System.out.println("3th quadrant");				
+				System.out.println("3th quadrant");
+				driveto(new Waypoint(repos[0], repos[1]));
 			}
 			if((DestH+180>RobH)&(RobH>=DestH+90)) {
 				System.out.println("4th quadrant");
+				driveto(new Waypoint(chp2[0], chp2[1]));
+				driveto(new Waypoint(repos[0], repos[1]));
 			}
+			Delay.msDelay(2000);
 		}
 		if(-90>DestH) {
 			if((DestH+270>RobH)&(RobH>=DestH+180)) {
 				System.out.println("1th quadrant");
+				driveto(new Waypoint(chp1[0], chp1[1]));
+				driveto(new Waypoint(repos[0], repos[1]));
 			}
 			if((180>=RobH)&(RobH>=DestH+270)|(DestH>RobH)&(RobH>=-90)) {
 				System.out.println("2th quadrant");
+				driveto(new Waypoint(repos[0], repos[1]));
 			}
 			if((DestH+90>RobH)&(RobH>=DestH)){
-				System.out.println("3th quadrant");				
+				System.out.println("3th quadrant");	
+				driveto(new Waypoint(repos[0], repos[1]));
 			}
 			if((DestH+180>RobH)&(RobH>=DestH+90)) {
 				System.out.println("4th quadrant");
-			}	
-		repos[1] =(float) (objY+200*Math.sin(Math.atan(Math.abs(a))));
-		repos[0] = (repos[1]-b)/a;
-		
+				driveto(new Waypoint(chp2[0], chp2[1]));
+				driveto(new Waypoint(repos[0], repos[1]));
+			}
+		}
 		}
 		
-		
-		
-		
-	}
+			
 
-
+//What is the difference between driveTo and driveToObject?
 	public static void driveto(Waypoint waypoint){
 		
 		float X = nav.getPoseProvider().getPose().getX();
@@ -323,6 +373,7 @@ public class RobotColorUnknownObjects extends Thread{
 
 	}
 
+	// can be deleted
 	public static void SortListOfBricks(int color1,int color2,int color3){
 
 		/* This method detects the color of a new detected object and sorts the list of bricks by color priority. First it detects the color of the object
@@ -372,6 +423,8 @@ public class RobotColorUnknownObjects extends Thread{
 		}
 	}
 
+	
+	//can be deleted
 	public static void SortAtDistance(){
 		/* this method sorts the bricks in the list with the same color priority as the first birck on the distance between the robot and the brick. */
 		int priority = bricklist.get(0).colorPriority;
