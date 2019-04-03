@@ -90,7 +90,8 @@ public class ObjectFinder {
 					float X = nav.getPoseProvider().getPose().getX();
 					float Y = nav.getPoseProvider().getPose().getY();
 					double Angle = gyroSensor.getHeadingAngle();
-					distance=usensor.getDistance();					
+					distance=usensor.getDistance();	
+					System.out.println(distance);
 //					Travel half the distance that is measured, to execute the same code to find the object again.
 					distance = distance * 500;
 					pilot.travel((int) (distance),false);
@@ -126,7 +127,7 @@ public class ObjectFinder {
 				startAngle = gyroSensor.getAngle();
 				System.out.println("StartAngle: "+ endAngle);
 				Delay.msDelay(1000);
-				pilot.rotateImmediateReturn(140, true);
+				pilot.rotateImmediateReturn(360, true);
 				System.out.println("Going Further...");
 				while(pilot.isMoving()&&Button.ESCAPE.isUp()){
 					dist = distance;

@@ -25,7 +25,7 @@ public class RobotColorUnknownObjects extends Thread{
 	static EV3LargeRegulatedMotor leftMotor= new EV3LargeRegulatedMotor(MotorPort.A);
 	static EV3LargeRegulatedMotor rightMotor= new EV3LargeRegulatedMotor(MotorPort.B);
 	static GyroSensor gyroSensor=new GyroSensor();
-	static CorrectionPilot pilot=new CorrectionPilot(57.72, 186, leftMotor, rightMotor,gyroSensor);
+	static CorrectionPilot pilot=new CorrectionPilot(56, 186, leftMotor, rightMotor,gyroSensor);
 	static Pose pose = new Pose();
 
 	static Navigator nav=new Navigator(pilot);
@@ -43,7 +43,8 @@ public class RobotColorUnknownObjects extends Thread{
 
 
 	public static void main(String[] args) {
-
+		
+		System.out.println("Version 3/4/19/15/52");
 		nav.getPoseProvider().getPose().setLocation(0, 0);
 		pilot.setLinearSpeed(200);
 		pilot.setAngularSpeed(50);
@@ -114,9 +115,9 @@ public class RobotColorUnknownObjects extends Thread{
 					double Angle = gyroSensor.getHeadingAngle();
 
 //					save the coordinates of the object (needs to be adjusted for the size of the object)
-					objX = nav.getPoseProvider().getPose().getX();
-					objY = nav.getPoseProvider().getPose().getY();
 					objA = gyroSensor.getHeadingAngle();
+					objX = (float) (nav.getPoseProvider().getPose().getX()+ 80*Math.cos(objA));
+					objY = (float) (nav.getPoseProvider().getPose().getY()+ 80*Math.sin(objA));
 					
 					System.out.println("distance: "+ distance);
 					Delay.msDelay(2000);
@@ -211,7 +212,7 @@ public class RobotColorUnknownObjects extends Thread{
 
 				gripper.release(); // can be changed to gotObject= false (to get rid of gripper program)
 				Delay.msDelay(500);
-				System.out.println("Afheleverd");
+				System.out.println("Afgeleverd");
 
 				goToTravel(-300); // drive backwards out of the parking
 				secondCheckPoint = true;
@@ -231,7 +232,12 @@ public class RobotColorUnknownObjects extends Thread{
 	
 //	We need to check this function for errors, I uploaded a separate java file to test this code.
 	public static void reposition(float objX, float objY, float RobH, int colorsamp) {
-		pilot.travel(-200);
+		System.out.println(nav.getPoseProvider().getPose());
+		System.out.println(objX +" "+ objY +" "+ RobH);
+		Delay.msDelay(1000);
+		goToTravel(-300);
+		System.out.println(nav.getPoseProvider().getPose());
+		Delay.msDelay(1000);
 //		nav.getPoseProvider().setPose(new Pose(waypoint.x,waypoint.y,gyroSensor.getHeadingAngle()));
 		float[] repos = {0,0};
 		int[] parking = {0,0};
@@ -250,40 +256,41 @@ public class RobotColorUnknownObjects extends Thread{
 			parking[1] = 0;
 		}
 		float a=(objX - parking[0])/(objY - parking[1]);
-		float b= objY -a*objX;
-		repos[1] =(float) (objY+200*Math.sin(Math.atan(Math.abs(a))));
-		repos[0] = (repos[1]-b)/a;
-		
+		repos[1] =(float) (objY+300*Math.cos(Math.atan(a)));
+		repos[0] = (float)(objX+300*Math.asin(Math.atan(a)));
+		System.out.println(repos);
 		if (a<0) {
-			chp1[1] = (float) (objY+200*Math.cos(Math.atan(a)));
-			chp1[0] = (float) (objX-200*Math.sin(Math.atan(a)));
+			chp1[1] = (float) (objY+300*Math.cos(Math.atan(a)));
+			chp1[0] = (float) (objX-300*Math.sin(Math.atan(a)));
 			
-			chp2[1] = (float) (objY-200*Math.cos(Math.atan(a)));
-			chp2[0] = (float) (objX+200*Math.sin(Math.atan(a)));
+			chp2[1] = (float) (objY-300*Math.cos(Math.atan(a)));
+			chp2[0] = (float) (objX+300*Math.sin(Math.atan(a)));
+			System.out.println("a<0");
 		}
 		else {
-			chp1[1] = (float) (objY-200*Math.cos(Math.atan(a)));
-			chp1[0] = (float) (objX+200*Math.sin(Math.atan(a)));
+			chp1[1] = (float) (objY-300*Math.cos(Math.atan(a)));
+			chp1[0] = (float) (objX+300*Math.sin(Math.atan(a)));
 			
-			chp2[1] = (float) (objY+200*Math.cos(Math.atan(a)));
-			chp2[0] = (float) (objX-200*Math.sin(Math.atan(a)));
+			chp2[1] = (float) (objY+300*Math.cos(Math.atan(a)));
+			chp2[0] = (float) (objX-300*Math.sin(Math.atan(a)));
+			System.out.println("a>0");
 		}
-		float DestH=(float) Math.atan(1/a)-90;
+		float DestH=(float) Math.atan(a)-90;
 		if(DestH>-90) {
 			if((180>=RobH)&(RobH>=DestH+180)|(DestH-90>RobH)&(RobH>=-180)) {
 				System.out.println("1th quadrant");
 				driveto(new Waypoint(chp1[0], chp1[1]));
 				driveto(new Waypoint(repos[0], repos[1]));
 			}
-			if((DestH>RobH)&(RobH>=DestH-90)) {
+			else if((DestH>RobH)&(RobH>=DestH-90)) {
 				System.out.println("2th quadrant");
 				driveto(new Waypoint(repos[0], repos[1]));
 			}
-			if((DestH+90>RobH)&(RobH>=DestH)){
+			else if((DestH+90>RobH)&(RobH>=DestH)){
 				System.out.println("3th quadrant");
 				driveto(new Waypoint(repos[0], repos[1]));
 			}
-			if((DestH+180>RobH)&(RobH>=DestH+90)) {
+			else if((DestH+180>RobH)&(RobH>=DestH+90)) {
 				System.out.println("4th quadrant");
 				driveto(new Waypoint(chp2[0], chp2[1]));
 				driveto(new Waypoint(repos[0], repos[1]));
@@ -296,15 +303,15 @@ public class RobotColorUnknownObjects extends Thread{
 				driveto(new Waypoint(chp1[0], chp1[1]));
 				driveto(new Waypoint(repos[0], repos[1]));
 			}
-			if((180>=RobH)&(RobH>=DestH+270)|(DestH>RobH)&(RobH>=-90)) {
+			else if((180>=RobH)&(RobH>=DestH+270)|(DestH>RobH)&(RobH>=-90)) {
 				System.out.println("2th quadrant");
 				driveto(new Waypoint(repos[0], repos[1]));
 			}
-			if((DestH+90>RobH)&(RobH>=DestH)){
+			else if((DestH+90>RobH)&(RobH>=DestH)){
 				System.out.println("3th quadrant");	
 				driveto(new Waypoint(repos[0], repos[1]));
 			}
-			if((DestH+180>RobH)&(RobH>=DestH+90)) {
+			else if((DestH+180>RobH)&(RobH>=DestH+90)) {
 				System.out.println("4th quadrant");
 				driveto(new Waypoint(chp2[0], chp2[1]));
 				driveto(new Waypoint(repos[0], repos[1]));
