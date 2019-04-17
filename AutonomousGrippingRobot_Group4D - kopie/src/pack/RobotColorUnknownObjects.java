@@ -42,6 +42,7 @@ public class RobotColorUnknownObjects extends Thread{
 
 
 
+
 	public static void main(String[] args) {
 
 		nav.getPoseProvider().getPose().setLocation(0, 0);
@@ -51,10 +52,10 @@ public class RobotColorUnknownObjects extends Thread{
 		pilot.setLinearAcceleration(100);	
 
 
-//		bricklist.addBegin(0,new Brick(new Waypoint(0,0)));
-//		bricklist.addBegin(1,new Brick(new Waypoint(0,0)));
-//		bricklist.addBegin(2,new Brick(new Waypoint(0,0)));
-//		bricklist.addBegin(3,new Brick(new Waypoint(0,0)));
+		bricklist.addBegin(0,new Brick(new Waypoint(0,0)));
+		bricklist.addBegin(1,new Brick(new Waypoint(0,0)));
+		bricklist.addBegin(2,new Brick(new Waypoint(0,0)));
+		bricklist.addBegin(3,new Brick(new Waypoint(0,0)));
 
 		new Exit().start();
 		new RobotColorUnknownObjects().start();
@@ -64,10 +65,9 @@ public class RobotColorUnknownObjects extends Thread{
 
 		boolean firstCheckPoint = true;
 		boolean secondCheckPoint = false;
-		boolean gotObject = false;
-//		boolean NoObjectDetected = false;
-//		boolean objectAlreadyDetected = false;
-//		boolean NotFirstPriority=false;
+		boolean NoObjectDetected = false;
+		boolean objectAlreadyDetected = false;
+		boolean NotFirstPriority=false;
 
 		int checkPoint = 0;
 		int angleToRotate = 360;
@@ -161,8 +161,8 @@ public class RobotColorUnknownObjects extends Thread{
 				while (angleToRotate>0){
 					distance=objectFinder.findObject(ir,pilot,ultrasonicsensor,nav,gyroSensor,angleToRotate);
 					pilot.setAngularSpeed(50);
-//					NotFirstPriority=false;
-//					objectAlreadyDetected = false;
+					NotFirstPriority=false;
+					objectAlreadyDetected = false;
 
 					float X = nav.getPoseProvider().getPose().getX();
 					float Y = nav.getPoseProvider().getPose().getY();
