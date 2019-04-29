@@ -365,7 +365,7 @@ public class CorrectionPilot implements ArcRotateMoveController {
 	    }
 	    
 		setAngularSpeed(50);
-		setAngularAcceleration(300);
+		setAngularAcceleration(50);
   }
   
   public void rotateImmediateReturn(double angle, boolean immediateReturn) {
